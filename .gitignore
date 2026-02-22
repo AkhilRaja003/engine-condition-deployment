@@ -1,0 +1,21 @@
+
+# System files
+.config/
+__pycache__/
+*.pyc
+*.log
+*.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large data files
+*.csv
+sample_data/
+train.csv
+test.csv
+engine_data.csv
+
+# OS
+.DS_Store
+Thumbs.db
