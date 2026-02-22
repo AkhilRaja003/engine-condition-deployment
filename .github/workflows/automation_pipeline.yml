@@ -1,4 +1,4 @@
-name: End-to-End ML Automation Pipeline
+name: Auto Code Update Pipeline
 
 on:
   push:
@@ -8,46 +8,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  ml_pipeline:
+  auto_update:
     runs-on: ubuntu-latest
 
     steps:
 
-      - name: Checkout Repository
+      # Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # Setup Python
       - name: Setup Python Environment
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
-      - name: Install Dependencies
+      # Install Dependencies
+      - name: Install Packages
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy scikit-learn joblib huggingface_hub
+          pip install gitpython pandas numpy scikit-learn joblib huggingface_hub
 
-      - name: Run Data Validation + Preprocessing
+      # Run ML Pipeline Scripts
+      - name: Run Automation Scripts
         run: |
           python src/data_preprocessing.py
-
-      - name: Feature Engineering and Dataset Split
-        run: |
-          python src/data_split.py
-
-      - name: Train Machine Learning Model
-        run: |
           python src/train_model.py
-
-      - name: Hyperparameter Tuning
-        run: |
-          python src/hyperparameter_tuning.py
-
-      - name: Model Evaluation
-        run: |
           python src/evaluate_model.py
 
-      - name: Deploy Model to HuggingFace Hub
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      # Commit Generated Updates
+      - name: Commit Changes
         run: |
-          python src/deploy_model.py
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "actionbot@github.com"
+
+          git add My_Project/models || true
+          git add My_Project/data/processed || true
+
+          git commit -m "Auto pipeline update" || echo "No changes to commit"
+
+      # Push Code Updates
+      - name: Push to Main Branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin main
